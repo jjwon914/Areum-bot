@@ -18,12 +18,12 @@ def run_discord_bot():
         loop.create_task(client.process_messages())
         logger.info(f'{client.user} is now running!')
 
-    @client.tree.command(name="chat", description="Have a chat with ChatGPT")
+    @client.tree.command(name="chat", description="chat GPT와 대화하기.")
     async def chat(interaction: discord.Interaction, *, message: str):
         if client.is_replying_all == "True":
             await interaction.response.defer(ephemeral=False)
             await interaction.followup.send(
-                "> **WARN: You already on replyAll mode. If you want to use the Slash Command, switch to normal mode by using `/replyall` again**")
+                "> **경고: 이미 당신은 replyAll 모드에 있습니다. `/chat` 명령을 사용할 수 없습니다.**")
             logger.warning("\x1b[31mYou already on replyAll mode, can't use slash command!\x1b[0m")
             return
         if interaction.user == client.user:
@@ -35,50 +35,50 @@ def run_discord_bot():
         await client.enqueue_message(interaction, message)
 
 
-    @client.tree.command(name="private", description="Toggle private access")
+    @client.tree.command(name="private", description="개인 답장으로 전환.")
     async def private(interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=False)
         if not client.isPrivate:
             client.isPrivate = not client.isPrivate
             logger.warning("\x1b[31mSwitch to private mode\x1b[0m")
             await interaction.followup.send(
-                "> **INFO: Next, the response will be sent via private reply. If you want to switch back to public mode, use `/public`**")
+                "> **정보: 지금부터 개인 답장으로 전송됩니다. 공개 모드로 전환하려면 `/public`을 사용하십시오.**")
         else:
             logger.info("You already on private mode!")
             await interaction.followup.send(
-                "> **WARN: You already on private mode. If you want to switch to public mode, use `/public`**")
+                "> **경고: 이미 개인 모드에 있습니다. 공개 모드로 전환하려면 `/public`을 사용하십시오.**")
 
-    @client.tree.command(name="public", description="Toggle public access")
+    @client.tree.command(name="public", description="공개 답장으로 전환.")
     async def public(interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=False)
         if client.isPrivate:
             client.isPrivate = not client.isPrivate
             await interaction.followup.send(
-                "> **INFO: Next, the response will be sent to the channel directly. If you want to switch back to private mode, use `/private`**")
+                "> **정보: 지금부터 채널에 직접 전송됩니다. 개인 모드로 전환하려면 `/private`을 사용하십시오.**")
             logger.warning("\x1b[31mSwitch to public mode\x1b[0m")
         else:
             await interaction.followup.send(
-                "> **WARN: You already on public mode. If you want to switch to private mode, use `/private`**")
+                "> **경고: 이미 공개 모드에 있습니다. 개인 모드로 전환하려면 `/private`을 사용하십시오.**")
             logger.info("You already on public mode!")
 
 
-    @client.tree.command(name="replyall", description="Toggle replyAll access")
+    @client.tree.command(name="replyall", description="모든 대화내용에 답장.")
     async def replyall(interaction: discord.Interaction):
         client.replying_all_discord_channel_id = str(interaction.channel_id)
         await interaction.response.defer(ephemeral=False)
         if client.is_replying_all == "True":
             client.is_replying_all = "False"
             await interaction.followup.send(
-                "> **INFO: Next, the bot will response to the Slash Command. If you want to switch back to replyAll mode, use `/replyAll` again**")
+                "> **정보: 지금부터 봇은 `/chat` 명령에 응답합니다. replyAll 모드로 다시 전환하려면 `/replyAll`을 사용하십시오.**")
             logger.warning("\x1b[31mSwitch to normal mode\x1b[0m")
         elif client.is_replying_all == "False":
             client.is_replying_all = "True"
             await interaction.followup.send(
-                "> **INFO: Next, the bot will disable Slash Command and responding to all message in this channel only. If you want to switch back to normal mode, use `/replyAll` again**")
+                "> **정보: 지금부터 봇은 모든 대화내용에 답장합니다. 일반 모드로 전환하려면 `/replyAll`을 다시 사용하십시오.**")
             logger.warning("\x1b[31mSwitch to replyAll mode\x1b[0m")
 
 
-    @client.tree.command(name="chat-model", description="Switch different chat model")
+    @client.tree.command(name="chat-model", description="채팅 모델 변경.")
     @app_commands.choices(choices=[
         app_commands.Choice(name="Official GPT-3.5", value="OFFICIAL"),
         app_commands.Choice(name="Ofiicial GPT-4.0", value="OFFICIAL-GPT4"),
@@ -114,18 +114,18 @@ def run_discord_bot():
                 raise ValueError("Invalid choice")
 
             client.chatbot = client.get_chatbot_model()
-            await interaction.followup.send(f"> **INFO: You are now in {client.chat_model} model.**\n")
+            await interaction.followup.send(f"> **정보: 지금부터 {client.chat_model} 모델을 사용합니다.**\n")
             logger.warning(f"\x1b[31mSwitch to {client.chat_model} model\x1b[0m")
 
         except Exception as e:
             client.chat_model = original_chat_model
             client.openAI_gpt_engine = original_openAI_gpt_engine
             client.chatbot = client.get_chatbot_model()
-            await interaction.followup.send(f"> **ERROR: Error while switching to the {choices.value} model, check that you've filled in the related fields in `.env`.**\n")
+            await interaction.followup.send(f"> **에러: {choices.value} 모델 에러발생, `.env`파일 확인요망.**\n")
             logger.exception(f"Error while switching to the {choices.value} model: {e}")
 
 
-    @client.tree.command(name="reset", description="Complete reset conversation history")
+    @client.tree.command(name="reset", description="대화 내용 리셋.")
     async def reset(interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=False)
         if client.chat_model == "OFFICIAL":
@@ -138,44 +138,41 @@ def run_discord_bot():
             await client.send_start_prompt()
         elif client.chat_model == "Bing":
             await client.chatbot.reset()
-        await interaction.followup.send("> **INFO: I have forgotten everything.**")
+        await interaction.followup.send("> **정보: 나 다 까먹었당.**")
         personas.current_persona = "standard"
         logger.warning(
             f"\x1b[31m{client.chat_model} bot has been successfully reset\x1b[0m")
 
-    @client.tree.command(name="help", description="Show help for the bot")
+    @client.tree.command(name="help", description="도움말 보기.")
     async def help(interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=False)
         await interaction.followup.send(""":star: **BASIC COMMANDS** \n
-        - `/chat [message]` Chat with ChatGPT!
-        - `/draw [prompt]` Generate an image with the Dalle2 model
-        - `/switchpersona [persona]` Switch between optional ChatGPT jailbreaks
-                `random`: Picks a random persona
-                `chatgpt`: Standard ChatGPT mode
-                `dan`: Dan Mode 11.0, infamous Do Anything Now Mode
-                `sda`: Superior DAN has even more freedom in DAN Mode
+        - `/chat [message]` chat GPT와 대화하기.
+        - `/draw [prompt]` Dalle2 모델을 사용하여 이미지 생성.
+        - `/switchpersona [persona]` chatGPT 탈옥 옵션.
+                `random`: 랜덤 인격
+                `chatgpt`: 표준 ChatGPT 
+                `dan`: Dan Mode 11.0, infamous Do Anything Now
+                `sda`: Superior DAN (DAN Mode 상위호환)
                 `confidant`: Evil Confidant, evil trusted confidant
                 `based`: BasedGPT v2, sexy GPT
-                `oppo`: OPPO says exact opposite of what ChatGPT would say
-                `dev`: Developer Mode, v2 Developer mode enabled
+                `oppo`: 청개구리 인격
+                `dev`: 개발자 모드
 
-        - `/private` ChatGPT switch to private mode
-        - `/public` ChatGPT switch to public mode
-        - `/replyall` ChatGPT switch between replyAll mode and default mode
-        - `/reset` Clear ChatGPT conversation history
-        - `/chat-model` Switch different chat model
+        - `/private` 개인 답장으로 전환.
+        - `/public` 공개 답장으로 전환.
+        - `/replyall` 모든 대화내용에 답장.
+        - `/reset` 대화 내용 리셋.
+        - `/chat-model` 채팅 모델 변경.
                 `OFFICIAL`: GPT-3.5 model
                 `UNOFFICIAL`: Website ChatGPT
                 `Bard`: Google Bard model
-                `Bing`: Microsoft Bing model
-
-For complete documentation, please visit:
-https://github.com/Zero6992/chatGPT-discord-bot""")
+                `Bing`: Microsoft Bing model""")
 
         logger.info(
             "\x1b[31mSomeone needs help!\x1b[0m")
 
-    @client.tree.command(name="info", description="Bot information")
+    @client.tree.command(name="info", description="chatGPT 정보.")
     async def info(interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=False)
         chat_engine_status = client.openAI_gpt_engine
@@ -196,7 +193,7 @@ gpt-engine: {chat_engine_status}
 ```
 """)
 
-    @client.tree.command(name="draw", description="Generate an image with the Dalle2 model")
+    @client.tree.command(name="draw", description="Dalle2 모델을 사용하여 이미지 생성.")
     @app_commands.choices(amount=[
         app_commands.Choice(name="1", value=1),
         app_commands.Choice(name="2", value=2),
@@ -230,17 +227,17 @@ gpt-engine: {chat_engine_status}
 
         except openai.InvalidRequestError:
             await interaction.followup.send(
-                "> **ERROR: Inappropriate request 😿**")
+                "> **에러: 부적절한 요청. 😿**")
             logger.info(
             f"\x1b[31m{username}\x1b[0m made an inappropriate request.!")
 
         except Exception as e:
             await interaction.followup.send(
-                "> **ERROR: Something went wrong 😿**")
+                "> **에러: 뭔가 잘못됐당. 😿**")
             logger.exception(f"Error while generating image: {e}")
 
 
-    @client.tree.command(name="switchpersona", description="Switch between optional chatGPT jailbreaks")
+    @client.tree.command(name="switchpersona", description="chatGPT 탈옥 옵션.")
     @app_commands.choices(persona=[
         app_commands.Choice(name="Random", value="random"),
         app_commands.Choice(name="Standard", value="standard"),
@@ -268,7 +265,7 @@ gpt-engine: {chat_engine_status}
         persona = persona.value
 
         if persona == personas.current_persona:
-            await interaction.followup.send(f"> **WARN: Already set to `{persona}` persona**")
+            await interaction.followup.send(f"> **경고: 이미 `{persona}` 모드 입니다.**")
 
         elif persona == "standard":
             if client.chat_model == "OFFICIAL":
@@ -282,7 +279,7 @@ gpt-engine: {chat_engine_status}
 
             personas.current_persona = "standard"
             await interaction.followup.send(
-                f"> **INFO: Switched to `{persona}` persona**")
+                f"> **정보: `{persona}` 모드로 변경.**")
 
         elif persona == "random":
             choices = list(personas.PERSONAS.keys())
@@ -291,7 +288,7 @@ gpt-engine: {chat_engine_status}
             personas.current_persona = chosen_persona
             await responses.switch_persona(chosen_persona, client)
             await interaction.followup.send(
-                f"> **INFO: Switched to `{chosen_persona}` persona**")
+                f"> **정보: `{chosen_persona}` 모드로 변경.**")
 
 
         elif persona in personas.PERSONAS:
@@ -302,12 +299,12 @@ gpt-engine: {chat_engine_status}
                 f"> **INFO: Switched to `{persona}` persona**")
             except Exception as e:
                 await interaction.followup.send(
-                    "> **ERROR: Something went wrong, please try again later! 😿**")
+                    "> **에러: 뭔가가 잘못됐습니다. 잠시후 다시 시도해주세요! 😿**")
                 logger.exception(f"Error while switching persona: {e}")
 
         else:
             await interaction.followup.send(
-                f"> **ERROR: No available persona: `{persona}` 😿**")
+                f"> **에러: 변경불가: `{persona}` 😿**")
             logger.info(
                 f'{username} requested an unavailable persona: `{persona}`')
 

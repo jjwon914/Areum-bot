@@ -26,7 +26,7 @@ class aclient(discord.Client):
         intents.message_content = True
         super().__init__(intents=intents)
         self.tree = app_commands.CommandTree(self)
-        self.activity = discord.Activity(type=discord.ActivityType.listening, name="/chat | /help")
+        self.activity = discord.Activity(type=discord.ActivityType.playing, name="VALORANT")
         self.isPrivate = False
         self.is_replying_all = os.getenv("REPLYING_ALL")
         self.replying_all_discord_channel_id = os.getenv("REPLYING_ALL_DISCORD_CHANNEL_ID")
