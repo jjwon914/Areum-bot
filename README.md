@@ -1,3 +1,8 @@
+# 아름이 수정내용
+> #### 2023-05-21 Zero6992/chatGPT-discord-bot 포크 및 기본세팅, 동작확인
+---
+# 원문 시작
+---
 # ChatGPT Discord Bot
 
 > ### Build your own Discord bot using ChatGPT
