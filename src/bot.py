@@ -5,6 +5,7 @@ import discord
 from random import randrange
 from src.aclient import client
 from discord import app_commands
+#from discord.ext import commands
 from src import log, art, personas, responses
 
 logger = log.setup_logger(__name__)
@@ -143,6 +144,13 @@ def run_discord_bot():
         personas.current_persona = "standard"
         logger.warning(
             f"\x1b[31m{client.chat_model} bot has been successfully reset\x1b[0m")
+
+    @client.tree.command(name="clear", description="채널 대화 100개 삭제.")
+    async def clear(interaction: discord.Interaction):
+        await interaction.response.defer(ephemeral=False)
+        await interaction.channel.purge(bulk=True)
+        logger.info(
+            "\x1b[31mSomeone needs clear!\x1b[0m")
 
     @client.tree.command(name="help", description="도움말 보기.")
     async def help(interaction: discord.Interaction):
@@ -308,7 +316,6 @@ gpt-engine: {chat_engine_status}
                 f"> **에러: 변경불가: `{persona}` 😿**")
             logger.info(
                 f'{username} requested an unavailable persona: `{persona}`')
-
 
     @client.event
     async def on_message(message):
