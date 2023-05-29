@@ -23,7 +23,7 @@ def run_discord_bot():
         if client.is_replying_all == "True":
             await interaction.response.defer(ephemeral=False)
             await interaction.followup.send(
-                "> **경고: 이미 당신은 replyAll 모드에 있습니다. `/chat` 명령을 사용할 수 없습니다.**")
+                "> **경고: /chat 비활성화 상태입니다. chat-gpt 채널을 이용해 주세요.**")
             logger.warning("\x1b[31mYou already on replyAll mode, can't use slash command!\x1b[0m")
             return
         if interaction.user == client.user:
