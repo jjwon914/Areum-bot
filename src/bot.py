@@ -2,6 +2,7 @@ import os
 import openai
 import asyncio
 import discord
+from typing import List
 from random import randrange
 from src.aclient import client
 from discord import app_commands
@@ -42,6 +43,26 @@ def run_discord_bot():
             f"\x1b[31m{username}\x1b[0m : /chat [{message}] in ({client.current_channel})")
 
         await client.enqueue_message(interaction, message)
+
+    ###투표기능 추가
+    @client.tree.command(name="vote", description="투표 기능.")
+    async def vote(interaction: discord.Interaction, question: str, options: str):
+        options_list = options.split(',')
+
+        # Construct the poll message
+        poll_embed = discord.Embed(title=question, color=discord.Color.blue())
+        for i, option in enumerate(options_list):
+            poll_embed.add_field(name=f"Option {i+1}", value=option, inline=False)
+
+        await interaction.response.defer(ephemeral=True)
+        await interaction.followup.send(embed=poll_embed)
+
+        # Add reactions to the poll message for voting
+        poll_message = await interaction.followup.send(embed=poll_embed)
+        for i in range(len(options_list)):
+            await poll_message.add_reaction(f"{i+1}\u20e3")
+
+        logger.info(f"\x1b[31m{interaction.user}\x1b[0m: /vote [{question}] in ({interaction.channel})")
 
 
     @client.tree.command(name="private", description="개인 답장으로 전환.")
@@ -152,13 +173,12 @@ def run_discord_bot():
         logger.warning(
             f"\x1b[31m{client.chat_model} bot has been successfully reset\x1b[0m")
 
-    @client.tree.command(name="clear", description="채널 대화 100개 삭제.")
+    @client.tree.command(name="clear", description="채널 내용 모두 삭제.")
     async def clear(interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=False)
-        await interaction.channel.purge(bulk=True)
-        logger.info(
-            "\x1b[31mSomeone needs clear!\x1b[0m")
-
+        await interaction.channel.purge()
+        logger.info("\x1b[31mSomeone needs clear!\x1b[0m")
+        
     @client.tree.command(name="help", description="도움말 보기.")
     async def help(interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=False)
@@ -326,15 +346,17 @@ gpt-engine: {chat_engine_status}
 
     @client.event
     async def on_message(message):
-
-        badwords = load_badwords()
-
+        if message.author.bot:
+            return
+        
         ##### remove bad words
+        badwords = load_badwords()
         message_contant=message.content
         for i in badwords:
             if i in message_contant:
-                await message.channel.send('😿욕설 금지😿')
+                await message.channel.send('😿 욕설 금지 😿')
                 await message.delete()
+                logger.info(f'Filtered bad word: {i}')
                 return
             
         if client.is_replying_all == "True":
