@@ -11,6 +11,13 @@ from src import log, art, personas, responses
 logger = log.setup_logger(__name__)
 
 def run_discord_bot():
+
+    ###비속어 불러오기
+    def load_badwords():
+        with open('badwords.txt', 'r', encoding='utf-8') as f:
+            badwords = [line.strip() for line in f]
+        return badwords
+    
     @client.event
     async def on_ready():
         await client.send_start_prompt()
@@ -319,8 +326,9 @@ gpt-engine: {chat_engine_status}
 
     @client.event
     async def on_message(message):
-        
-        badwords = ['ㅅㅂ','시발','씨발']
+
+        badwords = load_badwords()
+
         ##### remove bad words
         message_contant=message.content
         for i in badwords:
