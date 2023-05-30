@@ -319,6 +319,16 @@ gpt-engine: {chat_engine_status}
 
     @client.event
     async def on_message(message):
+        
+        badwords = ['ㅅㅂ','시발','씨발']
+        ##### remove bad words
+        message_contant=message.content
+        for i in badwords:
+            if i in message_contant:
+                await message.channel.send('😿욕설 금지😿')
+                await message.delete()
+                return
+            
         if client.is_replying_all == "True":
             if message.author == client.user:
                 return
